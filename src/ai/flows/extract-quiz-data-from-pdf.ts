@@ -46,14 +46,17 @@ const extractQuizDataFromPdfPrompt = ai.definePrompt({
     schema: ExtractQuizDataFromPdfOutputSchema
   },
   model: googleAI.model('gemini-pro-vision'),
-  system: `You are an expert data extraction AI. Your one and only task is to analyze the provided document and extract any quiz questions it contains.
+  system: `You are an AI assistant that extracts quiz questions from a document.
+Your task is to find all the questions in the provided document and format them as a JSON object.
+The JSON object must have a single key "questions", which is an array of question objects.
+Each question object should match the provided JSON schema.
 
-You must follow these instructions precisely:
-1.  **Analyze the document**: Read the entire document to identify questions, options, and potentially correct answers.
-2.  **Format Output**: Your entire output MUST be a single JSON object that strictly conforms to the provided output schema. Do not include any text, notes, or markdown formatting like \`\`\`json ... \`\`\` before or after the JSON object.
-3.  **Handle No Questions**: If you analyze the document and find zero questions, you MUST return a valid JSON object with an empty "questions" array. It should look exactly like this: \`{"questions": []}\`. Do not return an error or explanatory text.
-4.  **Infer Answers**: If an answer key is provided or if answers are marked, use that to populate the 'correctAnswer' field. If no answer is explicitly given, try to infer it if you are highly confident. If you cannot determine the answer, you MUST omit the 'correctAnswer' field for that question.
-5.  **Handle Question Types**: The schema supports multiple-choice questions (with options) and other types like short-answer (with an empty 'options' array). Extract them as you find them.`,
+- For each question, extract the question text, the options (if it's a multiple-choice question), and the correct answer if it's available or can be confidently inferred.
+- If a question is not multiple-choice, provide an empty array for the "options" field.
+- If a correct answer cannot be found, omit the "correctAnswer" field.
+- If the document contains no questions at all, you MUST return a JSON object with an empty "questions" array, like this: {"questions": []}.
+
+Your entire response must be ONLY the JSON object, with no other text, comments, or markdown formatting before or after it.`,
   prompt: `Document: {{media url=pdfDataUri}}`,
 });
 
