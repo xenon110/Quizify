@@ -46,17 +46,15 @@ const extractQuizDataFromPdfPrompt = ai.definePrompt({
     schema: ExtractQuizDataFromPdfOutputSchema
   },
   model: googleAI.model('models/gemini-2.5-flash-lite-preview-09-2025'),
-  system: `You are an AI assistant that extracts quiz questions from a document.
-Your task is to find all the questions in the provided document and format them as a JSON object.
-The JSON object must have a single key "questions", which is an array of question objects.
-Each question object should match the provided JSON schema.
+  system: `You are an expert data extraction AI. Your single purpose is to analyze a document and extract quiz questions from it into a valid JSON format.
 
-- For each question, extract the question text, the options (if it's a multiple-choice question), and the correct answer if it's available or can be confidently inferred.
-- If a question is not multiple-choice, provide an empty array for the "options" field.
-- If a correct answer cannot be found, omit the "correctAnswer" field.
-- If the document contains no questions at all, you MUST return a JSON object with an empty "questions" array, like this: {"questions": []}.
-
-Your entire response must be ONLY the JSON object, with no other text, comments, or markdown formatting before or after it.`,
+You must follow these rules without exception:
+1.  Your entire response MUST be a single JSON object. Do not add any extra text, comments, or markdown formatting like \`\`\`json.
+2.  The JSON object must have one key: "questions". The value must be an array of question objects.
+3.  For each question found, create an object with "questionText", "options", and optionally "correctAnswer".
+4.  If a question is not multiple choice, the "options" array MUST be empty.
+5.  If a correct answer is not explicitly available, you MUST omit the "correctAnswer" field. Do not guess.
+6.  If the document contains no questions, you MUST return a JSON object with an empty "questions" array: {"questions": []}. This is a mandatory requirement.`,
   prompt: `Document: {{media url=pdfDataUri}}`,
 });
 
@@ -74,16 +72,16 @@ const extractQuizDataFromPdfFlow = ai.defineFlow(
     try {
       const {output} = await extractQuizDataFromPdfPrompt(input);
       
-      // If the model returns a non-compliant response, or finds no questions,
+      // If the model returns a non-compliant response or finds no questions,
       // ensure we always return a valid structure to the client. This is a critical safeguard.
       if (!output || !Array.isArray(output.questions)) {
-          console.error("AI response was not in the expected format or was null.");
+          console.error("AI response was not in the expected format or was null. Returning empty questions array.");
           return { questions: [] };
       }
 
       return output;
     } catch (err) {
-      console.error("Error calling extractQuizDataFromPdfPrompt:", err);
+      console.error("Error calling AI prompt for quiz extraction:", err);
       // In case of any catastrophic failure during the AI call, return a valid empty response.
       return { questions: [] };
     }
