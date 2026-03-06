@@ -45,7 +45,7 @@ const extractQuizDataFromPdfPrompt = ai.definePrompt({
     format: 'json',
     schema: ExtractQuizDataFromPdfOutputSchema
   },
-  model: googleAI.model('gemini-pro-vision'),
+  model: googleAI.model('models/gemini-2.5-flash-lite-preview-09-2025'),
   system: `You are an AI assistant that extracts quiz questions from a document.
 Your task is to find all the questions in the provided document and format them as a JSON object.
 The JSON object must have a single key "questions", which is an array of question objects.
