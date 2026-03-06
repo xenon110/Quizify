@@ -8,8 +8,6 @@ import {
     FileText,
     Flame,
     Trophy,
-    Lightbulb,
-    Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PerformanceChart } from "./performance-chart";
@@ -17,7 +15,6 @@ import { RecentExams } from "./recent-exams";
 import { AvailableExams } from "./available-exams";
 import { useExams, Exam } from "@/hooks/use-exams";
 import { useEffect, useMemo, useState } from "react";
-import { getStudySuggestion } from "@/ai/flows/get-study-suggestion";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -28,8 +25,6 @@ type DashboardProps = {
 export function Dashboard({ userName }: DashboardProps) {
     const { exams, getAnswers } = useExams();
     const { user } = useAuth();
-    const [suggestion, setSuggestion] = useState('');
-    const [loadingSuggestion, setLoadingSuggestion] = useState(true);
     const [allScores, setAllScores] = useState<number[]>([]);
 
     const completedExams = useMemo(() => exams.filter(exam => exam.status === 'Completed'), [exams]);
@@ -37,7 +32,6 @@ export function Dashboard({ userName }: DashboardProps) {
     useEffect(() => {
         if (!user) {
             setAllScores([]);
-            setLoadingSuggestion(false);
             return;
         }
 
@@ -96,39 +90,6 @@ export function Dashboard({ userName }: DashboardProps) {
         return streak;
     }, [completedExams]);
 
-    useEffect(() => {
-        async function generateSuggestion() {
-            setLoadingSuggestion(true);
-            if (!user) {
-                setLoadingSuggestion(false);
-                return;
-            };
-
-            try {
-                if (completedExams.length === 0) {
-                     setSuggestion("Start a test to get personalized feedback!");
-                     setLoadingSuggestion(false);
-                     return;
-                }
-
-                const performanceData = completedExams.map((exam, index) => {
-                     return {
-                         examTitle: exam.title,
-                         score: allScores[index] || 0
-                     };
-                });
-
-                const result = await getStudySuggestion({ performanceData });
-                setSuggestion(result.suggestion);
-            } catch (error) {
-                console.error("Failed to get study suggestion:", error);
-                setSuggestion("Could not generate a suggestion at this time.");
-            } finally {
-                setLoadingSuggestion(false);
-            }
-        }
-        generateSuggestion();
-    }, [completedExams, allScores, user]);
     
     return (
         <main className="flex-1 p-4 sm:p-6 md:p-8 bg-muted/20 min-h-full">
@@ -187,27 +148,6 @@ export function Dashboard({ userName }: DashboardProps) {
                 </Link>
             </div>
             
-            <Link href="/exams" className="transform transition-transform duration-300 hover:scale-105 block">
-                <Card className="mb-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white cursor-pointer">
-                    <CardHeader className="flex flex-row items-center gap-4">
-                        <Lightbulb className="h-6 w-6 text-purple-200" />
-                        <div>
-                            <CardTitle className="text-base sm:text-lg">Personalized Suggestion</CardTitle>
-                            <CardContent className="p-0 pt-1 sm:pt-2">
-                                {loadingSuggestion ? (
-                                    <div className="flex items-center gap-2 text-sm text-purple-200/80">
-                                       <Loader2 className="h-4 w-4 animate-spin" />
-                                       <span>Generating your next step...</span>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm font-medium">{suggestion}</p>
-                                )}
-                            </CardContent>
-                        </div>
-                    </CardHeader>
-                </Card>
-            </Link>
-
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <PerformanceChart />
