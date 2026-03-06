@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "user-avatar",
+      "description": "User profile avatar in the sidebar",
+      "imageUrl": "https://picsum.photos/seed/user/40/40",
+      "imageHint": "person face"
+    },
+    {
+      "id": "login-background",
+      "description": "Background image for the login page",
+      "imageUrl": "https://picsum.photos/seed/login/1920/1080",
+      "imageHint": "abstract geometric"
+    }
+  ]
+}
