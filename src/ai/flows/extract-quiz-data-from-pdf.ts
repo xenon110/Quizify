@@ -68,14 +68,21 @@ const extractQuizDataFromPdfFlow = ai.defineFlow(
       throw new Error('MISSING_API_KEY');
     }
 
-    const {output} = await extractQuizDataFromPdfPrompt(input);
-    
-    // If the model returns a non-compliant response, or finds no questions,
-    // ensure we always return a valid structure to the client. This is a critical safeguard.
-    if (!output || !Array.isArray(output.questions)) {
-        return { questions: [] };
-    }
+    try {
+      const {output} = await extractQuizDataFromPdfPrompt(input);
+      
+      // If the model returns a non-compliant response, or finds no questions,
+      // ensure we always return a valid structure to the client. This is a critical safeguard.
+      if (!output || !Array.isArray(output.questions)) {
+          console.error("AI response was not in the expected format or was null.");
+          return { questions: [] };
+      }
 
-    return output;
+      return output;
+    } catch (err) {
+      console.error("Error calling extractQuizDataFromPdfPrompt:", err);
+      // In case of any catastrophic failure during the AI call, return a valid empty response.
+      return { questions: [] };
+    }
   }
 );
