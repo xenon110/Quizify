@@ -45,7 +45,7 @@ const extractQuizDataFromPdfPrompt = ai.definePrompt({
     format: 'json',
     schema: ExtractQuizDataFromPdfOutputSchema
   },
-  model: googleAI.model('models/gemini-2.5-flash-lite-preview-09-2025'),
+  model: googleAI.model('gemini-pro-vision'),
   system: `You are an expert data extraction AI. Your one and only task is to analyze the provided document and extract any quiz questions it contains.
 
 You must follow these instructions precisely:
